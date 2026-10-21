@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>账单</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Cpath d='M14 42c0-11 9-20 20-20h28c11 0 20 9 20 20v28c0 11-9 20-20 20H34c-11 0-20-9-20-20V42z' fill='%23f6c01a'/%3E%3Cpath d='M14 50h68v20c0 11-9 20-20 20H34c-11 0-20-9-20-20V50z' fill='%23f6c01a'/%3E%3Cpath d='M32 44l11 11 20-22' stroke='%2307c160' stroke-width='9' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  background:#fff;color:#000;font-size:16px;line-height:1.4;
+}
+.page{max-width:390px;margin:0 auto;background:#fff;min-height:100vh;position:relative}
+/* ===== 状态栏 ===== */
+.status{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 4px;font-size:15px;color:#000}
+.status-right{display:flex;align-items:center;gap:4px;font-size:14px;color:#000}
+/* ===== 顶部导航 ===== */
+.head{display:flex;align-items:center;justify-content:space-between;padding:4px 16px}
+.close{
+  width:30px;height:30px;border-radius:50%;border:none;background:#eee;color:#555;
+  font-size:18px;line-height:1;cursor:pointer;display:grid;place-items:center;
+}
+.title{font-size:17px;font-weight:400;color:#000}
+.head .sp{width:30px}
+/* ===== 主体 ===== */
+.main{text-align:center;padding:20px 0 0}
+.icon{width:50px;height:50px;margin:0 auto 10px}
+.icon img{width:50px;height:50px;border-radius:50%;object-fit:cover;display:block}
+.ptitle{font-size:15px;color:#333;margin-bottom:14px;padding:0 20px;overflow-wrap:break-word}
+.amount{font-size:34px;font-weight:700;color:#000;letter-spacing:.5px;overflow-wrap:break-word;padding:0 20px}
+/* ===== 明细 ===== */
+.detail{margin:26px 24px 0;border-top:1px solid #eee}
+.row{display:flex;align-items:center;justify-content:flex-start;padding:14px 0;border-bottom:1px solid #eee;gap:18px}
+.k{font-size:15px;color:#888;white-space:nowrap;flex:none;width:88px}
+.v{font-size:15px;color:#000;text-align:left;overflow-wrap:anywhere;min-width:0;flex:1}
+.v.ok{color:#000;font-weight:500}
+.v.no{font-size:14px;word-break:break-all;line-height:1.5}
+/* ===== 服务 ===== */
+.services{margin-top:18px;border-top:10px solid #f4f4f4;padding-bottom:24px}
+.sec{padding:16px 24px 0;font-size:15px;color:#888}
+.list{margin:0 24px}
+.item{
+  display:flex;align-items:center;gap:10px;width:100%;border:none;background:none;
+  padding:15px 0;border-bottom:1px solid #eee;cursor:pointer;text-align:left;font-size:15px;color:#576b95;
+}
+.item:last-child{border-bottom:none}
+.arrow{margin-left:auto;color:#576b95;font-size:13px}
+/* ===== 底部编辑区（不影响上方账单布局） ===== */
+.editor{border-top:1px solid #eee;padding:18px 20px 30px;background:#fafafa}
+.editor h3{font-size:14px;color:#555;margin-bottom:4px}
+.editor .tip{font-size:12px;color:#999;margin-bottom:14px}
+.ed-field{margin-bottom:12px}
+.ed-field label{display:block;font-size:13px;color:#666;margin-bottom:5px}
+.ed-field input{
+  width:100%;font-size:16px;padding:10px 12px;border:1px solid #ddd;border-radius:6px;
+  background:#fff;outline:none;
+}
+.ed-field input:focus{border-color:#07c160}
+.ed-reset{
+  margin-top:4px;font-size:14px;color:#07c160;background:none;border:none;cursor:pointer;padding:4px 0;
+}
+/* toast */
+#toast{
+  position:fixed;left:50%;bottom:20px;transform:translate(-50%,20px);
+  background:rgba(0,0,0,.85);color:#fff;font-size:14px;padding:9px 16px;border-radius:20px;
+  opacity:0;pointer-events:none;transition:.25s;z-index:99;
+}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- 状态栏 -->
+  <div class="status">
+    <span>14:28</span>
+    <span class="status-right">
+      <svg width="17" height="12" viewBox="0 0 17 12"><path d="M1 7.5h2v3H1zM4.5 6h2v4.5h-2zM8 4.5h2v6H8zM11.5 3h2v7.5h-2z" fill="#000"/><rect x="13.8" y="1" width="2" height="9.5" rx="1" fill="#000" opacity=".4"/></svg>
+      <span>67%</span>
+    </span>
+  </div>
+
+  <!-- 导航 -->
+  <div class="head">
+    <button class="close" data-toast="关闭">×</button>
+    <span class="title">账单</span>
+    <span class="sp"></span>
+  </div>
+
+  <!-- 主体 -->
+  <div class="main">
+    <div class="icon">
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFQAAABUCAMAAAArteDzAAABF1BMVEUAAADo6Ojr1Xns0V7n49Xn4tDo487n5Nbr6+vn49Hq14bp2pTp2ZHp257n5uHo3rnp3a3m5Nrm5Njo487n4s3n4s3o49Hp483n48/n49Dn5NXn49fn5+Pm5ubo6ODm5ubp6en////q1oHp1oDo4MDq1oLo3rTo3rPo5dTo6Ojo6Ojm5d7m48/n4cXp5NDo4cbuwQH////uwwvvxBDtxyPuxhf//vruxhz99db788799tz6773011rrzlTszEfyzznsyTHtxyjxySL++/D78cX67bf34YT01VHxzCv//ff23G3z00v++eb45JD333z99+H45Zb23XP122jrz1frz1bz00jy0ULxzTL9+uv455734on57LD56abvWzHIAAAAMHRSTlMAOf7++/v78hL8/v39/Pv7+vj15dPIw7mzrpZ+bGViRiMC/v79/vz8mi0s/pD8jHlBqmLWAAADvElEQVRYw82Z51IiQRSFhziCgBnFHDC7u/cOklGUHBSzmN7/OdY1ADJ9ugemqNrv11RN1akON7emYH1lfibkngwG/E6nPxCcdIdm5lfWteHZWFvQfeMnZwb1YJydjPv0hbWNoST3F6cnXMck5Ng1Mb24P7CkY87j/FIEuk7PnGMwyVmvi5S4vLPWZccinnuyxL0nMmZNc3lqyyCLGFtTy1aWGd45pwE43wkrF+vQt2lAtnXFya66T2lgTt2rMs0lb5KGIOldwpq/D+M0FPHoHtLc88VoSGK+I7D3KNZUqx4uCe/IGycbxL2C23K4k2SLpNthsnn9lGxyqvd7QXiTbLMd7vP3XRITa2Qz9WL6Mk8W2Fn+sfkp4O+1K/7i6qXWiSIFIHo+1XsAkS0S88o9pF6q+WbjOcOcAYayFem5eQ+KdWUWA07D8HQtYPaOAE0WUibA/WxnoV6CtFhAGrue93upcy7C5IrmdWJNcs19ah54SEb8rU+zQjI8n5l70UlyHkvc5aJJUpyLH3XI9DEpKGQ7mllVJDue/le7rE2QnFzpx4E+kpyJtXfRBRfJyKdNd18jGa6Fd1FduvtrNpNoSfeva9q6jzCxLJtQnqxvXVsZJ0ghxYB0nCDjK9r8CV5niiEZrHoyr82cESLLEkoGAc5mtBD8eclSnglghDQ3tCVWkCOAW5skQBpoFUvfDotMYFILgj8NoJkqUIY/uSYxQS0A/lyxkDeDbjtOACqFgOYnIVUWkWgQ5ZRB0K+BuFdiARd5omqCOzwZ4ugHRGNC04wTPSS4hyYQ9St2f3nd+aJ3zTr3cgm2H5AHpwui/Ie31nNmTU6BiwoqPPSGyKgkOFOj7nl2EZsUMP4U96pSrRUjopxJk5NC4wduWuQuje+0wmbaQjcFAaXOJtVbq+WPEQKh72ckvSWiGxaRFIY+EKSz3KfaEnuYOEiDdPLcb/cg/ovTCUh8TbZEBSQ+kKIv2AoFkKJBMVFhC5RBMYHKHiPFSooFUPbAAq2dYBVVVKDhUjKnUr3BpSQueh+L0r03UdErL88LZYZka6g8VzYSDyBPpx9xI6Fueaj9cmVK0pU2SVuebnOGqeUq5XTmKVF/yqRfW1WTHYHmTIts0lDgNhI3vGpAw9ttze2zszyKIcJIxh2jGMyMdoTUZemXnWFXFIz7jqI2xnJ42BcddoB4+GcUo87RDWXx+HhgL9jUHepB9+5gg+7d8JilkfymnZE8fjy4I0vcgccDm88co3+QUXOgejo6+F8euWw8x/0FzKciUtNPJfoAAAAASUVORK5CYII=" alt="收款图标">
+    </div>
+    <div class="ptitle" id="billTitle">扫二维码付款-给AAA财路</div>
+    <div class="amount" id="amount">-10.00</div>
+  </div>
+
+  <!-- 明细 -->
+  <div class="detail">
+    <div class="row"><span class="k">当前状态</span><span class="v ok">支付成功</span></div>
+    <div class="row"><span class="k">收款方备注</span><span class="v" id="remarkV">二维码收款</span></div>
+    <div class="row"><span class="k">支付方式</span><span class="v">零钱</span></div>
+    <div class="row"><span class="k">转账时间</span><span class="v" id="timeV">2026年10月3日 08:45:37</span></div>
+    <div class="row"><span class="k">转账单号</span><span class="v no" id="txnV">1000107301202610030121578</span></div>
+  </div>
+
+  <!-- 服务 -->
+  <div class="services">
+    <div class="sec">账单服务</div>
+    <div class="list">
+      <button class="item" data-toast="演示功能">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#576b95" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.2a2.5 2.5 0 1 1 3.5 2.2c-.8.4-1.1 1-1.1 1.7"/><circle cx="12" cy="16.6" r=".4" fill="#555"/></svg>
+        对订单有疑惑<span class="arrow">›</span>
+      </button>
+      <button class="item" data-toast="演示功能">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#576b95" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.4-3.2 2.4-5 5.5-5s5.1 1.8 5.5 5"/><circle cx="17" cy="9.5" r="2.4"/><path d="M17.5 14c2 .5 3.2 2 3.5 4.2"/></svg>
+        发起群收款<span class="arrow">›</span>
+      </button>
+      <button class="item" data-toast="演示功能">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#576b95" stroke-width="1.6" stroke-linecap="round"><rect x="5" y="4" width="14" height="16" rx="2"/><path d="M9 9h6M9 13h6M9 17h3"/></svg>
+        申请电子凭证<span class="arrow">›</span>
+      </button>
+    </div>
+    <div class="sec">收款方服务</div>
+    <div class="list">
+      <button class="item" data-toast="演示功能">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#576b95" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="11" r="2"/><path d="M5.5 17c.4-1.8 1.6-2.8 3-2.8s2.6 1 3 2.8"/><path d="M15 10h3M15 14h2"/></svg>
+        收款方名片<span class="arrow">›</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 编辑区 -->
+  <div class="editor">
+    <h3>编辑账单</h3>
+    <p class="tip">修改下方字段，上方账单实时更新。</p>
+    <div class="ed-field"><label>收款人</label><input id="f-receiver" value="AAA财路"></div>
+    <div class="ed-field"><label>金额（元）</label><input id="f-amount" inputmode="decimal" value="10.00"></div>
+    <div class="ed-field"><label>备注</label><input id="f-remark" value="二维码收款"></div>
+    <div class="ed-field"><label>转账时间</label><input id="f-time" value="2026年10月3日 08:45:37"></div>
+    <div class="ed-field"><label>转账单号</label><input id="f-txn" value="1000107301202610030121578"></div>
+    <button class="ed-reset" id="resetBtn">恢复默认</button>
+  </div>
+
+</div>
+<div id="toast"></div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id);};
+  var D={
+    receiver:'AAA财路',amount:'10.00',remark:'二维码收款',
+    time:'2026年10月3日 08:45:37',txn:'1000107301202610030121578'
+  };
+  var S={};
+  function money(v){var n=parseFloat(String(v).replace(/[^\d.\-]/g,''));if(isNaN(n))n=0;return '-'+n.toFixed(2);}
+  function render(){
+    $('billTitle').textContent='扫二维码付款-给'+S.receiver;
+    $('amount').textContent=money(S.amount);
+    $('remarkV').textContent=S.remark;
+    $('timeV').textContent=S.time;
+    $('txnV').textContent=S.txn;
+  }
+  function bind(id,key){
+    $(id).addEventListener('input',function(){S[key]=this.value;render();});
+  }
+  bind('f-receiver','receiver');bind('f-amount','amount');
+  bind('f-remark','remark');bind('f-time','time');bind('f-txn','txn');
+  $('resetBtn').addEventListener('click',function(){
+    S=Object.assign({},D);
+    ['receiver','amount','remark','time','txn'].forEach(function(k){$('f-'+k).value=S[k];});
+    render();toast('已恢复默认');
+  });
+  var t=$('toast'),tt=null;
+  function toast(m){t.textContent=m;t.classList.add('show');if(tt)clearTimeout(tt);tt=setTimeout(function(){t.classList.remove('show');},1500);}
+  document.querySelectorAll('[data-toast]').forEach(function(el){el.addEventListener('click',function(){toast(el.getAttribute('data-toast'));});});
+  S=Object.assign({},D);render();
+})();
+</script>
+</body>
+</html>
